@@ -12,7 +12,7 @@ Results are store in the form of a pickled file containing the tuple
 ```
 (samples, bounces, z_true, beta_true, runtime)
 ```
--`samples` - `n_iter x p` matrix of samples for the `p` regression coefficients.
--`bounces` - `n_iter x 2` matrix where first row is number of bounces for each iteration and second row is number of sticking/unsticking events.
--`z_true` - 0/1 array of true nonzero parameters.
--`beta_true` - array of true latent $\beta$ coefficients; `z_true * beta_true` is what gets multiplied by the design matrix to genreate data.
+-`samples` - `n_iter x p` matrix of samples for the `p` regression coefficients.  
+-`bounces` - `n_iter x 2` matrix where first row is number of bounces for each iteration and second row is number of sticking/unsticking events.  
+-`z_true` - 0/1 array of true nonzero parameters.  
+-`beta_true` - array of true latent $\beta$ coefficients; `z_true * beta_true` is what gets multiplied by the design matrix to genreate data.  
