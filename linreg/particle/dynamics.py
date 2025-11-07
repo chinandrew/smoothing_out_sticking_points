@@ -1,7 +1,6 @@
 """Functions for simulating motion of SHBPS, agnostic of model."""
 
 import numpy as np
-import scipy as sp
 
 from linreg.particle.idxs import min_argmin
 

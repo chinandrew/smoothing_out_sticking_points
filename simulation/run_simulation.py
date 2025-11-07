@@ -62,4 +62,4 @@ filename = (f'{method}_seed{seed}_'
             f'random-init_'
             f'{node}')
 with open(f"{filename}.pkl", "wb") as f:
-    pickle.dump((samples_raw, None, bounces, z_true, beta_true, runtime), f)
+    pickle.dump((samples_raw, bounces, z_true, beta_true, runtime), f)

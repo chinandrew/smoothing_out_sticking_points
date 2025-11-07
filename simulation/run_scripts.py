@@ -47,7 +47,6 @@ for alpha in alphas:
                 exports.append(f"t1={t[0]}")
                 exports.append(f"t2={t[1]}")
             job_name = f"{method}_{alpha}_{p_slab}_{seed}"
-
             command.append("--export=" + ",".join(exports))
             command.append(f"--job-name={job_name}")
             command.append(f"--time=7-00:00:00")
