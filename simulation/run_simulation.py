@@ -1,3 +1,29 @@
+"""
+Run sticky samplers.
+
+Takes in the following position command line arguments in order
+
+method: "shzz", "szz", or "szz-constant"
+n_iter: Integer number of samples to draw
+seed: Seed
+n: Number of observations
+p: Number of covariates
+nonzero_coefs: Number of true nonzero coefficients
+alpha: Block correlation in design matrix
+sigma2: Noise variance
+thin: Amount to thin samples. NOTE: Only used by "shzz",
+    for "szz" and "szz-constant" you can simply increase the integration time `t1` below.
+num_blocks: Number of correlated blocks in design matrix
+p_slab: Prior slab probability
+tau2: Prior coefficient variance (normal prior)
+t1: For "szz" and "szz-constant", discretization time for generating samples from continuous time trajectory.
+    For "shzz", lower bound for travel time.
+t2 ("shzz" only): For "shzz", upper end of travel time. Travel time is sampled Unif(t1, t2).
+
+
+Example command to run the latent sticky sampler:
+`python run_simulation.py szz-constant 25000 4 2000 2000 20 0.99 100 1 20 0.1 1 2`
+"""
 import pickle
 import socket
 import sys
