@@ -1,6 +1,7 @@
 # Code accompanying the paper "Smoothing Out Sticking Points: Sampling from Discrete-Continuous Mixtures with Dynamical Monte Carlo by Mapping Discrete Mass into a Latent Universe" by Chin and Nishimura
 
-Simulations used in the paper can be run through the `run_simulation.py` file in the `simulations/` folder, e.g. via
+For Section 3.2, simulations used in the paper can be run through the `run_simulation.py` file in the `simulations/` folder, e.g. via
+
 ```
 python run_simulation.py szz-constant 25 4 2000 2000 20 0.99 100 1 20 0.1 1 2
 ```
@@ -16,3 +17,6 @@ Results are store in the form of a pickled file containing the tuple
 -`bounces`: `n_iter x 2` matrix where first row is number of bounces for each iteration and second row is number of sticking/unsticking events.  
 -`z_true`: 0/1 array of true nonzero parameters.  
 -`beta_true`: array of true latent $\beta$ coefficients; `z_true * beta_true` is what gets multiplied by the design matrix to genreate data.  
+
+
+For Section 3.4, simulations are contained in the `logreg/` folder and are run similarly, though some arguments are different. See `logreg/run_simulation.py` for more info.

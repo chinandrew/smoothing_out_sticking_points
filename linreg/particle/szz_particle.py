@@ -20,42 +20,45 @@ class SZZParticle(Particle):
                  response: np.ndarray,
                  sigma2: float,
                  tau2: float,
-                 random_freeze_time: bool = True):
+                 random_freeze_time: bool,
+                 init_frozen_random: bool):
         """TODO."""
-        super().__init__(x, frozen, v, design, response, sigma2, tau2, p_slab)
+        super().__init__(x, frozen, v, design, response, sigma2, tau2, p_slab, init_frozen_random)
 
         self.kappa = 1 / (compute_freeze_boundary(p_slab, tau2) * 2)
-        if random_freeze_time:
-            self.freeze_boundaries = np.random.exponential(scale=1 / self.kappa, size=self.d) / 2
-            self.transition_universe = self.transition_universe_random
         self.exps = np.random.exponential(size=self.d)
         self.precomp["precv"], self.precomp["precx"], self.precomp["precx_mu"] = self.prec_matvecs()
+        if random_freeze_time:
+            self.freeze_times[~self.unfrozen] = np.random.exponential(scale=1 / self.kappa,
+                                                                      size=np.sum(~self.unfrozen)) / 2
+            self.transition_universe = self.transition_universe_random
 
     def advance_unfrozen(self, t: float):
         """Advance dynamics for unfrozen coordinates."""
-        self.x[~self.frozen] = self.x[~self.frozen] + self.v[~self.frozen] * t
+        self.x[self.unfrozen] = self.x[self.unfrozen] + self.v[self.unfrozen] * t
         change = (
                 (t - self.precomp["pos_time"]) * self.precomp["vprecx_mu"]
                 + (t ** 2 / 2 - self.precomp["pos_time"] ** 2 / 2) * self.precomp["vprecv"]
         )
         change[self.precomp["pos_time"] > t] = 0
-        self.exps[~self.frozen] -= change
+        self.exps[self.unfrozen] -= change
 
     def transition_universe_random(self, next_event_idx: int):
         """Move specific index in or out of frozen universe. Assumes only index each event."""
-        if self.frozen[next_event_idx]:
+        if ~self.unfrozen[next_event_idx]:
             self.x[next_event_idx] = 0.0
+            self.freeze_times[next_event_idx] = np.inf
         else:
             self.freeze_boundaries[next_event_idx] = np.random.exponential(scale=1 / self.kappa) / 2
-            self.x[next_event_idx] = -np.sign(self.v[next_event_idx]) * self.freeze_boundaries[next_event_idx]
-        self.frozen[next_event_idx] = ~self.frozen[next_event_idx]
+            self.freeze_times[next_event_idx] = self.freeze_boundaries[next_event_idx] * 2
+        self.unfrozen[next_event_idx] = ~self.unfrozen[next_event_idx]
 
     def time_to_bounce(self):
         """Compute next time to bounce, ignoring freezes. Bounce index is returned as nan."""
-        vprecv = self.v[~self.frozen] * self.precomp["precv"]
-        vprecx_mu = self.v[~self.frozen] * self.precomp["precx_mu"]
+        vprecv = self.v[self.unfrozen] * self.precomp["precv"]
+        vprecx_mu = self.v[self.unfrozen] * self.precomp["precx_mu"]
         pos_time = self.get_first_pos_time(self.precomp["precv"], self.precomp["precx_mu"], vprecv, vprecx_mu)
-        c = (- self.exps[~self.frozen] - pos_time * vprecx_mu - pos_time ** 2 / 2 * vprecv)
+        c = (- self.exps[self.unfrozen] - pos_time * vprecx_mu - pos_time ** 2 / 2 * vprecv)
         bounce_times = min_root(vprecv / 2, vprecx_mu, c, pos_time)
         next_bounce_time, next_bounce_idx = min_argmin(bounce_times)
         self.precomp["vprecv"] = vprecv
@@ -65,7 +68,7 @@ class SZZParticle(Particle):
 
     def bounce(self, bounce_idx):
         """Reflect velocity at the chosen index."""
-        self.exps = np.random.exponential(size=self.d)
+        self.exps[self.unfrozen] = np.random.exponential(size=self.num_unfrozen)
         self.v[bounce_idx] *= -1
 
     def get_first_pos_time(self, precv, precxmu, vprecv, vprecx_mu):

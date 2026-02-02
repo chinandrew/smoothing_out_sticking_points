@@ -1,4 +1,4 @@
-import subprocess
+"""Slurm commands with relevant parameters to run simulations."""
 
 n_iter = 25000
 n = 2000
@@ -10,23 +10,23 @@ tau2 = 1
 
 alphas = [0.5, 0.9, 0.99]
 
-seeds = [0,1,2,3,4]
+seeds = [0, 1, 2, 3, 4]
 samplers = [
     ("shzz", 0.001, (2, 6), 50),
-    ("szz", 0.001, 100, 1),
-    ("szz-constant", 0.001, 100,1),
+    ("szz", 0.001, 200, 1),
+    ("szz-constant", 0.001, 200, 1),
     ("shzz", 0.01, (2, 6), 5),
-    ("szz", 0.01, 10, 1),
-    ("szz-constant", 0.01, 10, 1),
+    ("szz", 0.01, 20, 1),
+    ("szz-constant", 0.01, 20, 1),
     ("shzz", 0.1, (2, 6), 1),
-    ("szz", 0.1, 2, 1),
-    ("szz-constant", 0.1, 2, 1),
+    ("szz", 0.1, 4, 1),
+    ("szz-constant", 0.1, 4, 1),
 ]
 
 for alpha in alphas:
     for seed in seeds:
         for method, p_slab, t, thin in samplers:
-            command = ["sbatch --nodelist=compute-164 "] #  --mem=5G"]
+            command = ["sbatch --nodelist=compute-164 "]  # --mem=5G"]
             exports = [
                 f"n_iter={n_iter}",
                 f"n={n}",
