@@ -13,3 +13,16 @@ def min_root(a, b, c, lower_bound=0):
     root[1, has_root] = (sqrtdisc - b[has_root]) / aa
     root[root <= lower_bound] = np.inf
     return np.min(root, axis=0)
+
+
+def min_root(a, b, c, lower_bound=0):
+    """Slightly faster than above"""
+    aa = 2 * a
+    disc = b ** 2 - 4 * a * c
+    sqrt_disc = np.sqrt(np.maximum(disc, 0))
+    r1 = (-b - sqrt_disc) / aa
+    r2 = (sqrt_disc - b) / aa
+    pos_disc = disc > 0
+    r1 = np.where(pos_disc & (r1 > lower_bound), r1, np.inf)
+    r2 = np.where(pos_disc & (r2 > lower_bound), r2, np.inf)
+    return np.minimum(r1, r2)

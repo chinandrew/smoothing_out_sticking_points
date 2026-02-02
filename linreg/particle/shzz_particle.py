@@ -18,21 +18,22 @@ class SHZZParticle(Particle):
                  design: np.ndarray,
                  response: np.ndarray,
                  sigma2: float,
-                 tau2: float):
+                 tau2: float,
+                 init_frozen_random: bool):
         """TODO."""
         self.p = np.copy(p)
         v = np.sign(p)
-        super().__init__(x, frozen, v, design, response, sigma2, tau2, p_slab)
-        self.precomp["precv"], self.precomp["precx"] , self.precomp["precx_mu"] = self.prec_matvecs()
+        super().__init__(x, frozen, v, design, response, sigma2, tau2, p_slab, init_frozen_random)
+        self.precomp["precv"], self.precomp["precx"], self.precomp["precx_mu"] = self.prec_matvecs()
 
     def advance_unfrozen(self, t: float):
         """Advance dynamics for unfrozen coordinates."""
-        self.p[~self.frozen] = self.p[~self.frozen] - t * self.precomp["precx_mu"] - t ** 2 / 2 * self.precomp["precv"]
-        self.x[~self.frozen] = self.x[~self.frozen] + self.v[~self.frozen] * t
+        self.p[self.unfrozen] = self.p[self.unfrozen] - t * self.precomp["precx_mu"] - t ** 2 / 2 * self.precomp["precv"]
+        self.x[self.unfrozen] = self.x[self.unfrozen] + self.v[self.unfrozen] * t
 
     def time_to_bounce(self):
         """Compute next time to bounce, ignoring freezes. Bounce index is returned as nan."""
-        bounce_times = min_root(self.precomp["precv"] / 2, self.precomp["precx_mu"], -self.p[~self.frozen])
+        bounce_times = min_root(self.precomp["precv"] / 2, self.precomp["precx_mu"], -self.p[self.unfrozen])
         next_bounce_time, next_bounce_idx = min_argmin(bounce_times)
         return next_bounce_time, next_bounce_idx
 
@@ -43,6 +44,6 @@ class SHZZParticle(Particle):
 
     def refresh(self):
         """Draw new momentum and velocity."""
-        self.p[~self.frozen] = np.random.laplace(size=sum(~self.frozen))
+        self.p[self.unfrozen] = np.random.laplace(size=sum(self.unfrozen))
         self.v = np.sign(self.p)
         self.precomp["precv"], self.precomp["precx"], self.precomp["precx_mu"] = self.prec_matvecs()

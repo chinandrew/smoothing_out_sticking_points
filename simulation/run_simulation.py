@@ -27,8 +27,11 @@ Example command to run the latent sticky sampler:
 import pickle
 import socket
 import sys
-
+import cProfile
+import pickle
+import pstats
 import numpy as np
+import os
 
 sys.path.append('..')
 
@@ -45,7 +48,7 @@ alpha = float(sys.argv[7])
 sigma2 = float(sys.argv[8])
 thin = int(sys.argv[9])
 if method != "shzz":
-    thin = 1 # PDMPs just use longer discretization times
+    thin = 1  # PDMPs just use longer discretization times
 num_blocks = int(sys.argv[10])
 p_slab = float(sys.argv[11])
 tau2 = float(sys.argv[12])
@@ -61,15 +64,21 @@ X_scale2 = 1
 np.random.seed(0)
 z_true = np.zeros(p)
 z_true[np.random.choice(range(p), size=nonzero_coefs, replace=False)] = 1
-beta_true = 2*np.random.binomial(1, 0.5, size=p) - 1
+beta_true = 2 * np.random.binomial(1, 0.5, size=p) - 1
 assert p % num_blocks == 0
 assert sum(z_true) == nonzero_coefs
 
 X = generate_block_autocorrelated_design(n, p, num_blocks, alpha, X_scale2)
 
 y = X @ (z_true * beta_true) + np.random.normal(scale=np.sqrt(sigma2), size=n)
-
+if not os.path.exists(f"simulated_data_a{alpha}.p"):
+    with open(f"simulated_data_a{alpha}.p", "wb") as f:  # for saving data for logreg example
+        pickle.dump((X, y, z_true, beta_true), f)
+else:
+    pass
 initial_perturbed = beta_true * z_true + np.random.normal(size=p, scale=0.001)
+profiler = cProfile.Profile()
+profiler.enable()
 samples_raw, aug_samples_raw, bounces, sampler, runtime = sample(
     method, n_iter, initial_perturbed, z_true, X, y, sigma2, p_slab, tau2, t, thin, seed=seed)
 
@@ -87,5 +96,9 @@ filename = (f'{method}_seed{seed}_'
             f'nblock{num_blocks}_'
             f'random-init_'
             f'{node}')
-with open(f"{filename}.pkl", "wb") as f:
-    pickle.dump((samples_raw, bounces, z_true, beta_true, runtime), f)
+profiler.disable()
+pstats.Stats(profiler).dump_stats(
+    f"{filename}.prof",
+)
+with open(f"{filename}.p", "wb") as f:
+    pickle.dump((samples_raw, bounces, z_true, beta_true, runtime), f)  # not storing aug_samples for space

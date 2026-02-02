@@ -13,14 +13,14 @@ alphas = [0.5, 0.9, 0.99]
 seeds = [0,1,2,3,4]
 samplers = [
     ("shzz", 0.001, (2, 6), 50),
-    ("szz", 0.001, 100, 1),
-    ("szz-constant", 0.001, 100,1),
+    ("szz", 0.001, 200, 1),
+    ("szz-constant", 0.001, 200,1),
     ("shzz", 0.01, (2, 6), 5),
-    ("szz", 0.01, 10, 1),
-    ("szz-constant", 0.01, 10, 1),
+    ("szz", 0.01, 20, 1),
+    ("szz-constant", 0.01, 20, 1),
     ("shzz", 0.1, (2, 6), 1),
-    ("szz", 0.1, 2, 1),
-    ("szz-constant", 0.1, 2, 1),
+    ("szz", 0.1, 4, 1),
+    ("szz-constant", 0.1, 4, 1),
 ]
 
 for alpha in alphas:

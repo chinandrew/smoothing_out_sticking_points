@@ -18,21 +18,22 @@ def sample(method, n_iter, initial, z_true, X, y, sigma2, p_slab, tau2, t, thin=
     z = np.copy(z_true)
     start = time.time()
     if method == "szz":
-        samples, aug_samples, bounces, sampler = szz(n_iter, ~z.astype(bool), initial, X, y, sigma2, p_slab, tau2,
-                                                     travel_time=t, init_unif_frozen=True)
+        samples, aug_samples, bounces, sampler = szz(n_iter, z.astype(bool), initial, X, y, sigma2, p_slab, tau2,
+                                                     travel_time=t, init_unif_frozen=False)
     elif method == "szz-constant":
-        samples, aug_samples, bounces, sampler = szz(n_iter, ~z.astype(bool), initial, X, y, sigma2, p_slab, tau2,
+        samples, aug_samples, bounces, sampler = szz(n_iter, z.astype(bool), initial, X, y, sigma2, p_slab, tau2,
                                                      travel_time=t, random_freeze_time=False, init_unif_frozen=True)
     elif method == "shzz":
-        samples, aug_samples, bounces, sampler = shzz(n_iter, ~z.astype(bool), initial, X, y, sigma2, p_slab, tau2,
+        samples, aug_samples, bounces, sampler = shzz(n_iter, z.astype(bool), initial, X, y, sigma2, p_slab, tau2,
                                                       travel_time=t, thin=thin, init_unif_frozen=True)
     else:
         raise NotImplementedError
     runtime = time.time() - start
     return samples, aug_samples, bounces, sampler, runtime
 
+
 def shzz(n_iters: int,
-         frozen: np.ndarray,
+         unfrozen: np.ndarray,
          beta: np.ndarray,
          X: np.ndarray,
          y: np.ndarray,
@@ -46,8 +47,8 @@ def shzz(n_iters: int,
     Draw posterior samples using Sticky HZZ.
 
     :param n_iters: Number of samples to draw.
-    :param frozen: Initial boolean vector for which of the `beta` are frozen. Length p.
-    :param beta: Initial vector for latent coefficients beta if frozen[i] == True, then beta[i] is
+    :param unfrozen: Initial boolean vector for which of the `beta` are unfrozen. Length p.
+    :param beta: Initial vector for latent coefficients beta. If unfrozen[i] == False, then beta[i] is
         its position in the augmented universe. Length p.
     :param X: Design matrix. Dimension n x p.
     :param y: Response vector. Length p.
@@ -66,16 +67,13 @@ def shzz(n_iters: int,
     aug_samples = np.empty((n_iters, p))
     bounces = np.empty((n_iters, 2))
     momentum = np.random.laplace(size=p)
-    sampler = SHZZParticle(beta, frozen, momentum, p_slab, X, y, sigma2, tau2)
-    if init_unif_frozen:
-        sampler.x[sampler.frozen] = np.random.uniform(-0.99 * sampler.freeze_boundaries[sampler.frozen],
-                                                      0.99 * sampler.freeze_boundaries[sampler.frozen])
+    sampler = SHZZParticle(beta, unfrozen, momentum, p_slab, X, y, sigma2, tau2, init_unif_frozen)
     for i in range(int(n_iters * thin)):
         if isinstance(travel_time, (int, float)):
             sampler.advance(travel_time)
         else:
             sampler.advance(np.random.uniform(travel_time[0], travel_time[1]))
-        if thin==1 or i % thin == (thin-1):
+        if thin == 1 or i % thin == (thin - 1):
             samples[int(i / thin), :] = sampler.true_x
             aug_samples[int(i / thin), :] = sampler.aug_x
             bounces[int(i / thin), 0] = sampler.info["num_bounces"]
@@ -85,7 +83,7 @@ def shzz(n_iters: int,
 
 
 def szz(n_iters: int,
-        frozen: np.ndarray,
+        unfrozen: np.ndarray,
         beta: np.ndarray,
         X: np.ndarray,
         y: np.ndarray,
@@ -99,8 +97,8 @@ def szz(n_iters: int,
     Draw posterior samples using Sticky ZZ.
 
     :param n_iters: Number of samples to draw.
-    :param frozen: Initial boolean vector for which of the `beta` are frozen. Length p.
-    :param beta: Initial vector for latent coefficients beta if frozen[i] == True, then beta[i] is
+    :param unfrozen: Initial boolean vector for which of the `beta` are unfrozen. Length p.
+    :param beta: Initial vector for latent coefficients beta. If unfrozen[i] == False, then beta[i] is
         its position in the augmented universe. Length p.
     :param X: Design matrix. Dimension n x p.
     :param y: Response vector. Length p.
@@ -115,17 +113,15 @@ def szz(n_iters: int,
     """
     p = X.shape[1]
     samples = np.empty((n_iters, p))
-    aug_samples = np.empty((n_iters, p))
+    aug_samples = np.empty((n_iters, p))  if not random_freeze_time else None
     bounces = np.empty((n_iters, 2))
     v = np.random.binomial(1, 0.5, size=p) * 2 - 1
-    sampler = SZZParticle(beta, frozen, v, p_slab, X, y, sigma2, tau2, random_freeze_time)
-    if init_unif_frozen:
-        sampler.x[sampler.frozen] = np.random.uniform(-0.99 * sampler.freeze_boundaries[sampler.frozen],
-                                                      0.99 * sampler.freeze_boundaries[sampler.frozen])
+    sampler = SZZParticle(beta, unfrozen, v, p_slab, X, y, sigma2, tau2, random_freeze_time, init_unif_frozen)
     for i in range(n_iters):
         sampler.advance(travel_time)
         samples[i, :] = sampler.true_x
-        aug_samples[i, :] = sampler.aug_x
+        if not random_freeze_time:
+            aug_samples[i, :] = sampler.aug_x
         bounces[i, 0] = sampler.info["num_bounces"]
         bounces[i, 1] = sampler.info["num_freeze_thaw"]
     return samples, aug_samples, bounces, sampler

@@ -16,16 +16,3 @@ def reflect(v: np.ndarray,
     """Reflect the vector p off of the surface orthogonal to ortho_plane."""
     return v - 2 * (ortho_plane @ v) / (ortho_plane @ ortho_plane) * ortho_plane
 
-
-def time_to_unthaw(x: np.ndarray,
-                   v: np.ndarray,
-                   freeze_boundaries: np.ndarray,
-                   positive_threshold: float = 1e-12):
-    """
-    Find first time and index to unthaw by exiting augmented space.
-
-    Assumes boundaries are equal on both sides of zero, i.e. freeze_bounaries < x < freeze_boundaries.
-    """
-    next_unthaw = (np.sign(v) * freeze_boundaries - x) / v
-    next_unthaw[next_unthaw < positive_threshold] = np.inf
-    return min_argmin(next_unthaw)
