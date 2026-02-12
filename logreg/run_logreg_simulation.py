@@ -24,7 +24,7 @@ p_slab = float(sys.argv[8])
 alpha = float(sys.argv[9])
 node = socket.gethostname().split(".")[0]
 
-with open(f"simulated_data_a{alpha}.p", "rb") as f:  # Pickled tuple of data from /simulation/run_simulation.py
+with open(f"../simulation/simulated_data_a{alpha}.p", "rb") as f:  # Pickled tuple of data from /simulation/run_simulation.py
     X, _, z_true, beta = pickle.load(f)
 beta = beta * z_true
 np.random.seed(0)
@@ -49,8 +49,7 @@ print(seed, num_steps, method)
 np.random.seed(seed)
 beta_init = np.random.uniform(-boundary, boundary, len(beta_int))
 if true_init:
-    beta[true_idxs] + np.sign(beta[true_idxs]) * boundary[true_idxs] + np.random.randn(len(true_idxs))*0.001
-    beta_init[0] = beta_int[0] + np.random.randn() * 0.001
+    beta_init[true_idxs] = beta_int[true_idxs] + np.sign(beta_int[true_idxs]) * boundary[true_idxs] + np.random.randn(len(true_idxs))*0.001
 start = time.perf_counter()
 profiler = cProfile.Profile()
 profiler.enable()
@@ -67,12 +66,12 @@ else:
     raise NotImplementedError
 profiler.disable()
 pstats.Stats(profiler).dump_stats(
-    f"{method}_{alpha}_{pslab}_seed{seed}_steps{num_steps}_stepsize{step_size}_iters{iters}_{node}.prof",
+    f"/fastscratch/myscratch/achin/shmc_logreg/{method}_{alpha}_{p_slab}_seed{seed}_steps{num_steps}_stepsize{step_size}_iters{iters}_{node}.prof",
 )
 runtime = time.perf_counter() - start
 meta["runtime"] = runtime
 print(meta)
 with open(
-        f"{method}_{alpha}_{pslab}_seed{seed}_steps{num_steps}_stepsize{step_size}_iters{iters}_{node}.p",
+        f"/fastscratch/myscratch/achin/shmc_logreg/{method}_{alpha}_{p_slab}_seed{seed}_steps{num_steps}_stepsize{step_size}_iters{iters}_{node}.p",
         "wb") as f:
     pickle.dump((samples, meta), f)
