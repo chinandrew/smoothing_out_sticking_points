@@ -37,7 +37,7 @@ for sampler in samplers:
                 thin = thin // 5
             if sampler == "zz":
                 print(
-                    f"sbatch --nodelist=compute-{node_dict[alpha]} --array=0,1,2,3,4  --export=method={sampler},iters={iters},thin={thin},true_init=1,stepsize={sampler_dict[sampler]['step_size'][alpha]},steps={sampler_dict[sampler]['num_steps'][alpha]},pslab={pslab},alpha={alpha} --job-name={sampler}_{pslab}_{alpha} run_logreg_simulation.sh")
+                    f"sbatch --nodelist=compute-{node_dict[alpha]} --array=0,1,2,3,4  --export=method={sampler},iters={iters},thin={thin},stepsize={sampler_dict[sampler]['step_size'][alpha]},steps={sampler_dict[sampler]['num_steps'][alpha]},pslab={pslab},alpha={alpha} --job-name={sampler}_{pslab}_{alpha} run_logreg_simulation.sh")
             else:
                 print(
-                    f"sbatch --nodelist=compute-{node_dict[alpha]} --array=0,1,2,3,4  --export=method={sampler},iters={iters},thin={thin},true_init=1,stepsize={sampler_dict[sampler]['step_size'][pslab]},steps={sampler_dict[sampler]['num_steps'][pslab]},pslab={pslab},alpha={alpha} --job-name={sampler}_{pslab}_{alpha} run_logreg_simulation.sh")
+                    f"sbatch --nodelist=compute-{node_dict[alpha]} --array=0,1,2,3,4  --export=method={sampler},iters={iters},thin={thin},stepsize={sampler_dict[sampler]['step_size'][pslab]},steps={sampler_dict[sampler]['num_steps'][pslab]},pslab={pslab},alpha={alpha} --job-name={sampler}_{pslab}_{alpha} run_logreg_simulation.sh")

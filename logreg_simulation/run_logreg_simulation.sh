@@ -9,6 +9,6 @@ source activate env
 
 cd /users/achin/smoothing_out_sticking_points/logreg/
 
-python run_logreg_simulation.py $method $iters $thin $SLURM_ARRAY_TASK_ID $stepsize  $steps $true_init $pslab $alpha
+python run_logreg_simulation.py $method $iters $thin $SLURM_ARRAY_TASK_ID $stepsize  $steps $pslab $alpha
 
 

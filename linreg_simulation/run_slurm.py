@@ -1,12 +1,6 @@
 """Slurm commands with relevant parameters to run simulations."""
 
 n_iter = 25000
-n = 2000
-p = 2000
-nonzero = 20
-num_blocks = 20
-sigma2 = 100
-tau2 = 1
 
 alphas = [0.5, 0.9, 0.99]
 
@@ -29,12 +23,6 @@ for alpha in alphas:
             command = ["sbatch --nodelist=compute-164 "]  # --mem=5G"]
             exports = [
                 f"n_iter={n_iter}",
-                f"n={n}",
-                f"p={p}",
-                f"nonzero={nonzero}",
-                f"num_blocks={num_blocks}",
-                f"tau2={tau2}",
-                f"sigma2={sigma2}",
                 f"thin={thin}",
             ]
             exports.append(f"method={method}")
