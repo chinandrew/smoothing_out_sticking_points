@@ -27,7 +27,7 @@ Results are store in the form of a pickled file containing the tuple
 For Section 3.4, simulation code is contained in the `logreg_simulation/` folder and are run similarly, though some arguments are different. 
 
 ```
-
+python logreg_simulation/run_logreg_simulation.py gaussian 750000 50 0 0.04 25 0.01 0.99
 ```
 As before, see `logreg_simulation/run_logreg_simulation.py` for more info on arguments, and run `logreg_simulation/run_scripts.py` for python commands to run
 jobs mentioned in paper.
